@@ -1,2 +1,2 @@
-bin\*.cs
-bin\*.xml
+bin/*.cs
+bin/*.xml
