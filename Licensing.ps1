@@ -85,13 +85,14 @@ function Set-O365UserLicense
     {
         $Dictionary = New-Object -TypeName System.Management.Automation.RuntimeDefinedParameterDictionary
 
-        [System.Collections.ArrayList]$Options = $O365AccountSkus |
+        [System.Collections.ArrayList]$AvailablePlans = $O365AccountSkus |
             Where-Object AccountSkuID -eq $AccountSkuId |
-            Select-Object -ExpandProperty AvailablePlans
+            Select-Object -ExpandProperty AvailablePlans |
+            Where-Object {$_ -notlike '*yammer*'}
         # This line removed the service plan from $O365AccountSkus inexplicably; weird!
         #[System.Collections.ArrayList]$Options = ($O365AccountSkus | Where-Object AccountSkuID -eq $AccountSkuId).AvailablePlans
         $ParamAttr = New-Object -TypeName System.Management.Automation.ParameterAttribute
-        $ParamOptions = New-Object -TypeName System.Management.Automation.ValidateSetAttribute -ArgumentList $Options
+        $ParamOptions = New-Object -TypeName System.Management.Automation.ValidateSetAttribute -ArgumentList $AvailablePlans
         $AttributeCollection = New-Object -TypeName 'Collections.ObjectModel.Collection[System.Attribute]'
         $AttributeCollection.Add($ParamAttr)
         $AttributeCollection.Add($ParamOptions)
@@ -102,7 +103,7 @@ function Set-O365UserLicense
 
     begin
     {
-        [System.Collections.ArrayList]$DisabledPlans = $Options
+        [System.Collections.ArrayList]$DisabledPlans = $AvailablePlans
         [string]$AccountSkuId = "$AccountSkuId"
         $DomainName = $O365AccountSkus |
             Where-Object {$_.AccountSkuId -eq $AccountSkuId} |
@@ -120,6 +121,7 @@ function Set-O365UserLicense
             $LicenseOptions = @{AccountSkuId  = $FullSku; DisabledPlans = $DisabledPlans}
             $Params.Add('LicenseOptions', (New-MsolLicenseOptions @LicenseOptions))
         }
+
         Write-Verbose -Message "License SKU: $AccountSkuId"
         Write-Verbose -Message "Service plans: $($ServicePlans -join ',')"
     }
