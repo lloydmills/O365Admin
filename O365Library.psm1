@@ -94,8 +94,6 @@ function Connect-O365
         {
             param($Credential)
             
-            #Connect-MsolService -Credential $Credential
-            
             $ExchParams = @{
                 ConfigurationName = 'microsoft.exchange'
                 ConnectionUri     = 'https://ps.outlook.com/powershell'
@@ -104,13 +102,16 @@ function Connect-O365
                 AllowRedirection  = $true
             }
             $ExchSession = New-PSSession @ExchParams
-
-            $ModParams = @{
-                ModuleInfo = (Import-PSSession -Session $ExchSession -AllowClobber -WarningAction SilentlyContinue -DisableNameChecking)
-                Global = $true
-                DisableNameChecking = $true
-            }
-            Import-Module @ModParams
+            $ModuleName = 'ExchangeOnline'
+            $ModulePath = "$env:TEMP\$ModuleName"
+            $null = Export-PSSession -Session $ExchSession -OutputModule $ModulePath -AllowClobber -Force
+            #$ModParams = @{
+            #    ModuleInfo = (Import-PSSession -Session $ExchSession -AllowClobber -WarningAction SilentlyContinue -DisableNameChecking)
+            #    Global = $true
+            #    DisableNameChecking = $true
+            #}
+            #Import-Module @ModParams
+            Import-Module $ModulePath -Global -DisableNameChecking
         }
     }
 
