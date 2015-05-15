@@ -31,13 +31,13 @@ A function that will initiate an Azure Active Directory Sync on the local or a r
 Helper Functions
 
 ####Test-O365ExchangeSessionState
-checks for an active implicit remoting session to outlook.com
+Checks for an active implicit remoting session to outlook.com
 
 ####Reconnect-O365Exchange
-works with Test-O365ExchangeSessionState to reconnect the remoting session if something went wrong.
+Works with Test-O365ExchangeSessionState to reconnect the remoting session if something went wrong.
 
  
-
+###Examples
 Connect to Exchange and Lync:
 
 ```PowerShell
