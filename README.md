@@ -118,20 +118,3 @@ Azure Active Directory Module
 Lync Online Module
 
 Sharepoint Online Management Shell
-
-
-###Version History:
-
-v1.5    5/15/2015      - Renamed to O365Admin. Now supports a named module for Exchange Online
-
-v1.41   3/16/2015      - bug fix - Set-O365UserLicense failed when Yammer was not included in service plans
-
-v1.4    3/12/2015      - Added dynamic licensing management capabilities
-
-v1.3    1/26/2015      - Added Start-O365DirSync function.
-
-v1.21   11/6/2014      - Fixed a typo that broke the Reconnect-O365Exchange function
-
-v1.2    11/5/2014      - Added two group membership functions and connectivity helper functions.
-
-v1.1    10/27/2014     - Initial upload. Included Connect-O365 and Disconnect-O365.
