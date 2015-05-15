@@ -10,7 +10,7 @@
 #region Initialize
 . "$PSScriptRoot\Init.ps1"
 $CSharp = Get-Content -Path $CSharpPath -Raw
-try {[O365Library.AccountSkuId]}
+try {[O365Admin.AccountSkuId]}
 catch [System.Management.Automation.RuntimeException]
 {
     Add-Type -TypeDefinition $CSharp

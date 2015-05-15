@@ -79,7 +79,7 @@ function Set-O365UserLicense
         $UserPrincipalName,
         
         [Parameter(Mandatory = $true)]
-        [O365Library.AccountSkuId]
+        [O365Admin.AccountSkuId]
         $AccountSkuId
     )
 

@@ -18,7 +18,7 @@ function Get-O365AccountSku
 }
 
 $TypeTemplate = @"
-    namespace O365Library
+    namespace O365Admin
     {
 	    public enum AccountSkuId
 	    {
