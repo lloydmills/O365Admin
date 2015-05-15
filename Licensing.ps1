@@ -67,12 +67,14 @@ function Set-O365UserLicense
         To-do:
         - create -Remove switch parameter to identify licenses to remove
         - method for handling disabled plans is removing plans from the $O365AccountSkus variable - gotta fix this
+        - AvailablePlans was an arraylist for easy removal of enabled plans, but this hosed in v5.0; I used an
+          array instead - does this break v3.0 and v4.0?
     #>
 
     [cmdletbinding(SupportsShouldProcess = $true)]
     param
     (
-        [parameter(Mandatory = $true,ValueFromPipelineByPropertyName = $true)]
+        [parameter(Mandatory = $true, ValueFromPipeline = $true, ValueFromPipelineByPropertyName = $true)]
         [string]
         $UserPrincipalName,
         
@@ -84,13 +86,12 @@ function Set-O365UserLicense
     dynamicparam
     {
         $Dictionary = New-Object -TypeName System.Management.Automation.RuntimeDefinedParameterDictionary
-
-        [System.Collections.ArrayList]$AvailablePlans = $O365AccountSkus |
+        $AvailablePlans = $O365AccountSkus |
             Where-Object AccountSkuID -eq $AccountSkuId |
             Select-Object -ExpandProperty AvailablePlans |
-            Where-Object {$_ -notlike '*yammer*'}
+            Where-Object { $_ -notlike '*yammer*' }
         # This line removed the service plan from $O365AccountSkus inexplicably; weird!
-        #[System.Collections.ArrayList]$Options = ($O365AccountSkus | Where-Object AccountSkuID -eq $AccountSkuId).AvailablePlans
+        #[System.Collections.ArrayList]$AvailablePlans = ($O365AccountSkus | Where-Object AccountSkuID -eq $AccountSkuId).AvailablePlans
         $ParamAttr = New-Object -TypeName System.Management.Automation.ParameterAttribute
         $ParamOptions = New-Object -TypeName System.Management.Automation.ValidateSetAttribute -ArgumentList $AvailablePlans
         $AttributeCollection = New-Object -TypeName 'Collections.ObjectModel.Collection[System.Attribute]'
@@ -103,23 +104,22 @@ function Set-O365UserLicense
 
     begin
     {
-        [System.Collections.ArrayList]$DisabledPlans = $AvailablePlans
+        $DisabledPlans = $AvailablePlans
         [string]$AccountSkuId = "$AccountSkuId"
         $DomainName = $O365AccountSkus |
             Where-Object {$_.AccountSkuId -eq $AccountSkuId} |
             Select-Object -ExpandProperty DomainName
         $FullSku = "$DomainName`:$AccountSkuId"
-        $Params = @{AddLicenses = $FullSku}
+        $Splat = @{AddLicenses = $FullSku}
 
         if ($PSBoundParameters.ServicePlans)
         {
             foreach ($ServicePlan in $PSBoundParameters.ServicePlans)
             {
-                $DisabledPlans.Remove($ServicePlan)
+                $DisabledPlans = $DisabledPlans | Where-Object { $_ -ne $ServicePlan }
             }
-
-            $LicenseOptions = @{AccountSkuId  = $FullSku; DisabledPlans = $DisabledPlans}
-            $Params.Add('LicenseOptions', (New-MsolLicenseOptions @LicenseOptions))
+            
+            $Splat.Add('LicenseOptions', (New-MsolLicenseOptions -AccountSkuId $FullSku -DisabledPlans $DisabledPlans))
         }
 
         Write-Verbose -Message "License SKU: $AccountSkuId"
@@ -131,20 +131,19 @@ function Set-O365UserLicense
         if ($PSCmdlet.ShouldProcess($UserPrincipalName))
         {
             Write-Verbose -Message "Processing: $UserPrincipalName"
-
-            $Params.UserPrincipalName = $UserPrincipalName
-
+            $Splat.UserPrincipalName = $UserPrincipalName
+            
             try
             {
                 Write-Verbose -Message "Attempting to add license $AccountSkuId..."
                 $null = Set-MsolUser -UserPrincipalName $UserPrincipalName -UsageLocation 'US'
-                Set-MsolUserLicense @Params -ErrorAction Stop
+                Set-MsolUserLicense @Splat -ErrorAction Stop
             }
             catch [Microsoft.Online.Administration.Automation.MicrosoftOnlineException]
             {
                 Write-Verbose -Message "User could not be licensed for $AccountSkuId. Attempting to set service plans..."
-                $Params.Remove('AddLicenses')
-                Set-MsolUserLicense @Params
+                $Splat.Remove('AddLicenses')
+                Set-MsolUserLicense @Splat -ErrorAction Stop        
             }
         }
     }
