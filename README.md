@@ -14,7 +14,7 @@ Outputs O365 user license information in an easily consumable object format.
 
 ###Set-O365UserLicense
 
-License management via Powershell is a real pain, but this function can make it quite a bit easier. Now when you load the O365Library module for the first time, you'll be prompted to log in with Office 365 admin credentials. This is to initialize your environment and populate your available licenses. Set-O365UserLicense provides the -AccountSkuId and -ServicePlans parameters and tab-completion/Intellisense for licenses available in your tenant.
+License management via Powershell is a real pain, but this function can make it quite a bit easier. Now when you load the O365Admin module for the first time, you'll be prompted to log in with Office 365 admin credentials. This is to initialize your environment and populate your available licenses. Set-O365UserLicense provides the -AccountSkuId and -ServicePlans parameters and tab-completion/Intellisense for licenses available in your tenant.
 
 ###Get-O365PrincipalGroupMembership
 
@@ -30,9 +30,11 @@ A function that will initiate an Azure Active Directory Sync on the local or a r
 
 Helper Functions
 
-###Test-O365ExchangeSessionState - checks for an active implicit remoting session to outlook.com
+####Test-O365ExchangeSessionState
+checks for an active implicit remoting session to outlook.com
 
-###Reconnect-O365Exchange - works with Test-O365ExchangeSessionState to reconnect the remoting session if something went wrong.
+####Reconnect-O365Exchange
+works with Test-O365ExchangeSessionState to reconnect the remoting session if something went wrong.
 
  
 
