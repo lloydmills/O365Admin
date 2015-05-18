@@ -25,10 +25,10 @@ function Connect-O365
         .SYNOPSIS
         Connects to the Office 365 environment
         .DESCRIPTION
-        Connects to Office 365 with options for Exchange, Lync and Sharepoint. You can also select
+        Connects to Office 365 with options for Exchange, Skype and Sharepoint. You can also select
         AzureActiveDirectory only.
         .PARAMETER Services
-        The Office 365 services you wish to connect to. Valid values are Exchange, Lync,
+        The Office 365 services you wish to connect to. Valid values are Exchange, Skype,
         and Sharepoint. To specify multiple values use a comma-separated list.
         .PARAMETER Credential
         The username or PSCredential to use to connect to Office 365 services.
@@ -37,7 +37,7 @@ function Connect-O365
         specify the URL to connect to.
         .EXAMPLE
         $Credential = Get-Credential
-        Connect-O365 -Services Exchange,Lync -Credential $Credential
+        Connect-O365 -Services Exchange,Skype -Credential $Credential
         .EXAMPLE
         Connect-O365 -Services Sharepoint -SharepointUrl https://contoso-admin.sharepoint.com -Credential $Credential
     #>
@@ -45,7 +45,7 @@ function Connect-O365
     Param
     (
         [parameter(Mandatory = $true)]
-        [ValidateSet('AzureActiveDirectory','Exchange','Lync','SharePoint')]
+        [ValidateSet('AzureActiveDirectory','Exchange','Skype','SharePoint')]
         [string[]]$Services,
 
         [parameter(Mandatory = $true)]
@@ -70,13 +70,13 @@ function Connect-O365
 
     begin
     {
-        function Connect-O365Lync
+        function Connect-O365Skype
         {
             param($Credential)
             $Option = New-PSSessionOption -IdleTimeout -1
-            $LyncSession = New-CsOnlineSession -Credential $Credential -SessionOption $Option
+            $SkypeSession = New-CsOnlineSession -Credential $Credential -SessionOption $Option
             $Params = @{
-                ModuleInfo = (Import-PSSession -Session $LyncSession -AllowClobber)
+                ModuleInfo = (Import-PSSession -Session $SkypeSession -AllowClobber)
                 DisableNameChecking = $true
                 Global = $true
             }
@@ -105,12 +105,6 @@ function Connect-O365
             $ModuleName = 'ExchangeOnline'
             $ModulePath = "$env:TEMP\$ModuleName"
             $null = Export-PSSession -Session $ExchSession -OutputModule $ModulePath -AllowClobber -Force
-            #$ModParams = @{
-            #    ModuleInfo = (Import-PSSession -Session $ExchSession -AllowClobber -WarningAction SilentlyContinue -DisableNameChecking)
-            #    Global = $true
-            #    DisableNameChecking = $true
-            #}
-            #Import-Module @ModParams
             Import-Module $ModulePath -Global -DisableNameChecking
         }
     }
@@ -120,9 +114,9 @@ function Connect-O365
         switch ($Services)
         {
             {$_ -contains 'AzureActiveDirectory' -or $_ -contains 'Exchange'} {Connect-MsolService -Credential $Credential}
-            {$_ -contains 'Exchange'}   {Connect-O365Exchange -Credential $Credential}
-            {$_ -contains 'Lync'}       {Connect-O365Lync -Credential $Credential}
-            {$_ -contains 'SharePoint'} {Connect-O365Sharepoint -Credential $Credential -Url $PSBoundParameters.SharepointUrl}
+            {$_ -contains 'Exchange'}   { Connect-O365Exchange -Credential $Credential }
+            {$_ -contains 'Skype'}      { Connect-O365Skype -Credential $Credential }
+            {$_ -contains 'SharePoint'} { Connect-O365Sharepoint -Credential $Credential -Url $PSBoundParameters.SharepointUrl }
         }
     }
 }
@@ -136,7 +130,7 @@ function Disconnect-O365
 
     param
     (
-        [ValidateSet('Exchange','Lync','SharePoint')]
+        [ValidateSet('Exchange','Skype','SharePoint')]
         [string[]]$Services = 'Exchange'
     )
 
@@ -146,14 +140,14 @@ function Disconnect-O365
         Remove-Module -Name tmp* -ErrorAction SilentlyContinue
     }
 
-    if ($Services -contains 'Lync')
+    if ($Services -contains 'Skype')
     {
         Get-PSSession |
-            Where-Object -Property ComputerName -Like -Value '*lync.com' |
+            Where-Object -Property ComputerName -Like -Value '*Skype.com' |
             Remove-PSSession
     }
 
-    if ($Services -contains 'SharePoint'){Disconnect-SPOService}
+    if ($Services -contains 'SharePoint'){ Disconnect-SPOService }
 }
 
 . "$PSScriptRoot\Licensing.ps1"
@@ -201,7 +195,7 @@ function Get-O365PrincipalGroupMembership
 
     foreach ($Group in $Groups)
     {
-        if ($Group.Members -contains $Recipient.DisplayName) {$Group.Identity}
+        if ($Group.Members -contains $Recipient.DisplayName) { $Group.Identity }
     }
 }
 
@@ -438,7 +432,7 @@ Set-Alias -Name O365 -Value Connect-O365
 
 #requires -version 3.0
 #requires -module MSOnline
-#requires -module LyncOnlineConnector
+#requires -module SkypeOnlineConnector
 #requires -module Microsoft.Online.SharePoint.Powershell
 #endregion
 
