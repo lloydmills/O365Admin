@@ -90,6 +90,10 @@ Assign user licenses and enabled service plans:
 Set-O365UserLicense -UserPrincipalName Abraham.Lincoln@whitehouse.gov -AccountSkuId ENTERPRISEPACK -ServicePlans EXCHANGE_S_STANDARD,SHAREPOINTENTERPRISE
 ```
 
+See my blog here for more usage examples:
+
+http://psescape.azurewebsites.net/o365admin_part1/
+
 ###Installation Instructions
 
 Right-click the downloaded .zip file and select Properties and then Unblock. Then use your favorite archive tool (7zip, etc.) to unpack it into your module directory. In a Powershell console or the ISE, run:
