@@ -75,12 +75,10 @@ function Connect-O365
             param($Credential)
             $Option = New-PSSessionOption -IdleTimeout -1
             $SkypeSession = New-CsOnlineSession -Credential $Credential -SessionOption $Option
-            $Params = @{
-                ModuleInfo = (Import-PSSession -Session $SkypeSession -AllowClobber)
-                DisableNameChecking = $true
-                Global = $true
-            }
-            Import-Module @Params
+            $ModuleName = 'SkypeForBusiness'
+            $ModulePath = "$env:TEMP\$ModuleName"
+            $null = Export-PSSession -Session $SkypeSession -OutputModule $ModulePath -AllowClobber -Force
+            Import-Module $ModulePath -Global -DisableNameChecking
         }
 
         function Connect-O365Sharepoint
