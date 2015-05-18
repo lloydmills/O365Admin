@@ -427,10 +427,9 @@ function Test-O365ExchSessionState
 }
 
 Set-Alias -Name O365 -Value Connect-O365
-
 #requires -version 3.0
 #requires -module MSOnline
-#requires -module SkypeOnlineConnector
+#requires -module LyncOnlineConnector
 #requires -module Microsoft.Online.SharePoint.Powershell
 #endregion
 
