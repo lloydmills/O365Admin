@@ -135,7 +135,7 @@ function Disconnect-O365
     if ($Services -contains 'Exchange')
     {
         Get-PSSession | Where-Object -Property ComputerName -Like -Value '*outlook.com' | Remove-PSSession
-        Remove-Module -Name tmp* -ErrorAction SilentlyContinue
+        Remove-Module -Name ExchangeOnline -ErrorAction SilentlyContinue
     }
 
     if ($Services -contains 'Skype')
@@ -143,9 +143,10 @@ function Disconnect-O365
         Get-PSSession |
             Where-Object -Property ComputerName -Like -Value '*Skype.com' |
             Remove-PSSession
+        Remove-Module -Name SkypeForBusiness -ErrorAction SilentlyContinue
     }
 
-    if ($Services -contains 'SharePoint'){ Disconnect-SPOService }
+    if ($Services -contains 'SharePoint'){ Disconnect-SPOService -ErrorAction SilentlyContinue }
 }
 
 . "$PSScriptRoot\Licensing.ps1"
