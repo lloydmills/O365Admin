@@ -118,10 +118,9 @@ Import-CliXml -Path c:\creds\credential.ps1
 
 ###Requirements:
 
-Microsoft Online Services Sign-In Assistant
-
-Azure Active Directory Module
-
-Lync Online Module
-
-Sharepoint Online Management Shell
+* Powershell version 3.0 or higher
+* A user that has been assigned administrative roles for Office 365 services
+* Microsoft Online Services Sign-In Assistant
+* Azure Active Directory Module
+* Lync Online Module
+* Sharepoint Online Management Shell
