@@ -41,20 +41,25 @@ function Connect-O365
         .EXAMPLE
         Connect-O365 -Services Sharepoint -SharepointUrl https://contoso-admin.sharepoint.com -Credential $Credential
     #>
-    [CmdletBinding()]
+    [CmdletBinding(DefaultParameterSetName = 'AllServices')]
     Param
     (
-        [parameter(Mandatory = $true)]
+        [parameter(ParameterSetName = 'Services')]
         [ValidateSet('AzureActiveDirectory','Exchange','Skype','SharePoint')]
         [string[]]$Services,
 
+        [parameter(ParameterSetName = 'AllServices')]
+        [switch]$AllServices,
+
         [parameter(Mandatory = $true)]
+        [parameter(ParameterSetName = 'AllServices')]
+        [parameter(ParameterSetName = 'Services')]
         [System.Management.Automation.Credential()]
         $Credential
     )
 
     dynamicparam {
-        if ($PSBoundParameters.Services -contains 'Sharepoint')
+        if ($PSBoundParameters.Services -contains 'Sharepoint' -or $PSBoundParameters.ContainsKey('AllServices'))
         {
             $ParamAttr = New-Object -TypeName System.Management.Automation.ParameterAttribute
             $ParamOptions = New-Object -TypeName System.Management.Automation.ValidatePatternAttribute ('^https://[a-zA-Z0-9\-]+\.sharepoint\.com')
@@ -84,7 +89,11 @@ function Connect-O365
         function Connect-O365Sharepoint
         {
             param($Credential, $Url)
-            $Params = @{Url=$Url; Credential=$Credential}
+            $Params = @{
+                Url = $Url
+                Credential = $Credential
+                WarningAction = 'SilentlyContinue'
+            }
             Connect-SPOService @Params
         }
 
@@ -111,10 +120,18 @@ function Connect-O365
     {
         switch ($Services)
         {
-            {$_ -contains 'AzureActiveDirectory' -or $_ -contains 'Exchange'} {Connect-MsolService -Credential $Credential}
-            {$_ -contains 'Exchange'}   { Connect-O365Exchange -Credential $Credential }
-            {$_ -contains 'Skype'}      { Connect-O365Skype -Credential $Credential }
-            {$_ -contains 'SharePoint'} { Connect-O365Sharepoint -Credential $Credential -Url $PSBoundParameters.SharepointUrl }
+            { $_ -contains 'AzureActiveDirectory' -or $_ -contains 'Exchange' -or $PSBoundParameters.ContainsKey('AllServices') }
+            {Connect-MsolService -Credential $Credential}
+
+            { $_ -contains 'Exchange' -or $PSBoundParameters.ContainsKey('AllServices') }  
+
+            { Connect-O365Exchange -Credential $Credential }
+
+            { $_ -contains 'Skype' -or $PSBoundParameters.ContainsKey('AllServices') }     
+            { Connect-O365Skype -Credential $Credential }
+
+            { $_ -contains 'SharePoint' -or $PSBoundParameters.ContainsKey('AllServices') }
+            { Connect-O365Sharepoint -Credential $Credential -Url $PSBoundParameters.SharepointUrl }
         }
     }
 }
@@ -126,27 +143,36 @@ function Disconnect-O365
         Disconnects from Office 365 services and removes proxy commands and sessions
     #>
 
+    [CmdletBinding(DefaultParameterSetName = 'AllServices')]
     param
     (
+        [parameter(ParameterSetName = 'Services')]
         [ValidateSet('Exchange','Skype','SharePoint')]
-        [string[]]$Services = 'Exchange'
+        [string[]]
+        $Services,
+
+        [parameter(ParameterSetName = 'AllServices')]
+        [switch]
+        $AllServices
     )
 
-    if ($Services -contains 'Exchange')
+    switch ($Services)
     {
-        Get-PSSession | Where-Object -Property ComputerName -Like -Value '*outlook.com' | Remove-PSSession
-        Remove-Module -Name ExchangeOnline -ErrorAction SilentlyContinue
-    }
+        { $Services -contains 'Exchange' -or $PSBoundParameters.ContainsKey('AllServices') }
+        {
+            Get-PSSession | Where-Object -Property ComputerName -Like -Value '*outlook.com' | Remove-PSSession
+            Remove-Module -Name ExchangeOnline -ErrorAction SilentlyContinue
+        }
 
-    if ($Services -contains 'Skype')
-    {
-        Get-PSSession |
-            Where-Object -Property ComputerName -Like -Value '*Skype.com' |
-            Remove-PSSession
-        Remove-Module -Name SkypeForBusiness -ErrorAction SilentlyContinue
-    }
+        { $Services -contains 'Skype' -or $PSBoundParameters.ContainsKey('AllServices') }
+        {
+            Get-PSSession | Where-Object -Property ComputerName -Like -Value '*online.lync.com' | Remove-PSSession
+            Remove-Module -Name SkypeForBusiness -ErrorAction SilentlyContinue
+        }
 
-    if ($Services -contains 'SharePoint'){ Disconnect-SPOService -ErrorAction SilentlyContinue }
+        { $Services -contains 'Sharepoint' -or $PSBoundParameters.ContainsKey('AllServices') }
+        { try { Disconnect-SPOService -ErrorAction SilentlyContinue } catch [System.InvalidOperationException]{} }
+    }
 }
 
 . "$PSScriptRoot\Licensing.ps1"
