@@ -44,3 +44,17 @@ else
 {
     $O365AccountSkus = Import-Clixml $XmlPath
 }
+
+Add-Type -TypeDefinition @'
+    using System;
+
+    [Flags]
+    public enum O365Services
+    {
+        AzureActiveDirectory,
+        Exchange,
+        Skype,
+        Sharepoint,
+        All = AzureActiveDirectory | Exchange | Sharepoint | Skype
+    }
+'@

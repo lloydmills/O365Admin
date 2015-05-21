@@ -22,38 +22,32 @@ catch [System.Management.Automation.RuntimeException]
 function Connect-O365
 {
     <#
-        .SYNOPSIS
-        Connects to the Office 365 environment
-        .DESCRIPTION
-        Connects to Office 365 with options for Exchange, Skype and Sharepoint. You can also select
-        AzureActiveDirectory only.
-        .PARAMETER Services
-        The Office 365 services you wish to connect to. Valid values are Exchange, Skype,
-        and Sharepoint. To specify multiple values use a comma-separated list.
-        .PARAMETER Credential
-        The username or PSCredential to use to connect to Office 365 services.
-        .PARAMETER SharepointUrl
-        If Sharepoint is specified as an argument to -Services, you can use SharepointUrl to
-        specify the URL to connect to.
-        .EXAMPLE
-        $Credential = Get-Credential
-        Connect-O365 -Services Exchange,Skype -Credential $Credential
-        .EXAMPLE
-        Connect-O365 -Services Sharepoint -SharepointUrl https://contoso-admin.sharepoint.com -Credential $Credential
+            .SYNOPSIS
+            Connects to the Office 365 environment
+            .DESCRIPTION
+            Connects to Office 365 with options for Exchange, Skype and Sharepoint. You can also select
+            AzureActiveDirectory only.
+            .PARAMETER Services
+            The Office 365 services you wish to connect to. Valid values are Exchange, Skype,
+            and Sharepoint. To specify multiple values use a comma-separated list.
+            .PARAMETER Credential
+            The username or PSCredential to use to connect to Office 365 services.
+            .PARAMETER SharepointUrl
+            If Sharepoint is specified as an argument to -Services, you can use SharepointUrl to
+            specify the URL to connect to.
+            .EXAMPLE
+            $Credential = Get-Credential
+            Connect-O365 -Services Exchange,Skype -Credential $Credential
+            .EXAMPLE
+            Connect-O365 -Services Sharepoint -SharepointUrl https://contoso-admin.sharepoint.com -Credential $Credential
     #>
-    [CmdletBinding(DefaultParameterSetName = 'AllServices')]
+    [CmdletBinding()]
     Param
     (
-        [parameter(ParameterSetName = 'Services')]
-        [ValidateSet('AzureActiveDirectory','Exchange','Skype','SharePoint')]
-        [string[]]$Services,
-
-        [parameter(ParameterSetName = 'AllServices')]
-        [switch]$AllServices,
+        [parameter(Mandatory = $true)]
+        [O365Services]$Services,
 
         [parameter(Mandatory = $true)]
-        [parameter(ParameterSetName = 'AllServices')]
-        [parameter(ParameterSetName = 'Services')]
         [System.Management.Automation.Credential()]
         $Credential
     )
@@ -120,17 +114,16 @@ function Connect-O365
     {
         switch ($Services)
         {
-            { $_ -contains 'AzureActiveDirectory' -or $_ -contains 'Exchange' -or $PSBoundParameters.ContainsKey('AllServices') }
+            { $_.HasFlag([O365Services]::AzureActiveDirectory) -or $_.HasFlag([O365Services]::Exchange) }
             {Connect-MsolService -Credential $Credential}
 
-            { $_ -contains 'Exchange' -or $PSBoundParameters.ContainsKey('AllServices') }  
-
+            { $_.HasFlag([O365Services]::Exchange) }
             { Connect-O365Exchange -Credential $Credential }
 
-            { $_ -contains 'Skype' -or $PSBoundParameters.ContainsKey('AllServices') }     
+            { $_.HasFlag([O365Services]::Skype) }     
             { Connect-O365Skype -Credential $Credential }
 
-            { $_ -contains 'SharePoint' -or $PSBoundParameters.ContainsKey('AllServices') }
+            { $_.HasFlag([O365Services]::Sharepoint) }
             { Connect-O365Sharepoint -Credential $Credential -Url $PSBoundParameters.SharepointUrl }
         }
     }
@@ -139,38 +132,33 @@ function Connect-O365
 function Disconnect-O365
 {
     <#
-        .SYNOPSIS
-        Disconnects from Office 365 services and removes proxy commands and sessions
+            .SYNOPSIS
+            Disconnects from Office 365 services and removes proxy commands and sessions
     #>
 
-    [CmdletBinding(DefaultParameterSetName = 'AllServices')]
+    [CmdletBinding()]
     param
     (
-        [parameter(ParameterSetName = 'Services')]
-        [ValidateSet('Exchange','Skype','SharePoint')]
-        [string[]]
-        $Services,
-
-        [parameter(ParameterSetName = 'AllServices')]
-        [switch]
-        $AllServices
+        [parameter(Mandatory = $true)]
+        [O365Services]
+        $Services
     )
 
     switch ($Services)
     {
-        { $Services -contains 'Exchange' -or $PSBoundParameters.ContainsKey('AllServices') }
+        { $_.HasFlag([O365Services]::Exchange) }
         {
             Get-PSSession | Where-Object -Property ComputerName -Like -Value '*outlook.com' | Remove-PSSession
             Remove-Module -Name ExchangeOnline -ErrorAction SilentlyContinue
         }
 
-        { $Services -contains 'Skype' -or $PSBoundParameters.ContainsKey('AllServices') }
+        { $_.HasFlag([O365Services]::Skype) }
         {
             Get-PSSession | Where-Object -Property ComputerName -Like -Value '*online.lync.com' | Remove-PSSession
             Remove-Module -Name SkypeForBusiness -ErrorAction SilentlyContinue
         }
 
-        { $Services -contains 'Sharepoint' -or $PSBoundParameters.ContainsKey('AllServices') }
+        { $_.HasFlag([O365Services]::Sharepoint) }
         { try { Disconnect-SPOService -ErrorAction SilentlyContinue } catch [System.InvalidOperationException]{} }
     }
 }
