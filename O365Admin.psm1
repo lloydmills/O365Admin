@@ -1,13 +1,4 @@
-﻿<#
-    To-Do
-    - Add background jobs capability - is this even possible?
-    - generalize as much as possible for sharing
-    - Set-O365license Error handling
-    - nested module - parent only contains connect and disconnect
-    - use psd1 file so AccountSkuId type can be added and removed cleanly
-#>
-
-#region Initialize
+﻿#region Initialize
 . "$PSScriptRoot\Init.ps1"
 $CSharp = Get-Content -Path $CSharpPath -Raw
 try {[O365Admin.AccountSkuId]}
@@ -75,7 +66,7 @@ function Connect-O365
             $Option = New-PSSessionOption -IdleTimeout -1
             $SkypeSession = New-CsOnlineSession -Credential $Credential -SessionOption $Option
             $ModuleName = 'SkypeForBusiness'
-            $ModulePath = "$PSScriptRoot\Bin\$ModuleName"
+            $ModulePath = "$env:TEMP\$ModuleName"
             $null = Export-PSSession -Session $SkypeSession -OutputModule $ModulePath -AllowClobber -Force
             Import-Module $ModulePath -Global -DisableNameChecking
         }
@@ -104,7 +95,7 @@ function Connect-O365
             }
             $ExchSession = New-PSSession @ExchParams
             $ModuleName = 'ExchangeOnline'
-            $ModulePath = "$PSScriptRoot\Bin\$ModuleName"
+            $ModulePath = "$env:TEMP\$ModuleName"
             $null = Export-PSSession -Session $ExchSession -OutputModule $ModulePath -AllowClobber -Force
             Import-Module $ModulePath -Global -DisableNameChecking
         }
