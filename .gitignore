@@ -1,2 +1,3 @@
 bin/*.cs
 bin/*.xml
+bin/Modules/*.*
