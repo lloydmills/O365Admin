@@ -1,2 +1,4 @@
 bin/*.cs
 bin/*.xml
+bin/ExchangeOnline/*
+bin/SkypeForBusiness/*
