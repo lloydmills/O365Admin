@@ -66,7 +66,7 @@ function Connect-O365
             $Option = New-PSSessionOption -IdleTimeout -1
             $SkypeSession = New-CsOnlineSession -Credential $Credential -SessionOption $Option
             $ModuleName = 'SkypeForBusiness'
-            $ModulePath = "$env:TEMP\$ModuleName"
+            $ModulePath = "$PSScriptRoot\Bin\$ModuleName"
             $null = Export-PSSession -Session $SkypeSession -OutputModule $ModulePath -AllowClobber -Force
             Import-Module $ModulePath -Global -DisableNameChecking
         }
@@ -95,7 +95,7 @@ function Connect-O365
             }
             $ExchSession = New-PSSession @ExchParams
             $ModuleName = 'ExchangeOnline'
-            $ModulePath = "$env:TEMP\$ModuleName"
+            $ModulePath = "$PSScriptRoot\Bin\$ModuleName"
             $null = Export-PSSession -Session $ExchSession -OutputModule $ModulePath -AllowClobber -Force
             Import-Module $ModulePath -Global -DisableNameChecking
         }
