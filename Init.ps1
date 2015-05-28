@@ -51,10 +51,10 @@ Add-Type -TypeDefinition @'
     [Flags]
     public enum O365Services
     {
-        AzureActiveDirectory,
-        Exchange,
-        Sharepoint,
-        Skype,
+        AzureActiveDirectory = 0x1,
+        Exchange = 0x2,
+        Sharepoint = 0x4,
+        Skype = 0x8,
         All = AzureActiveDirectory | Exchange | Sharepoint | Skype
     }
 '@
