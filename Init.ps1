@@ -53,8 +53,8 @@ Add-Type -TypeDefinition @'
     {
         AzureActiveDirectory,
         Exchange,
-        Skype,
         Sharepoint,
+        Skype,
         All = AzureActiveDirectory | Exchange | Sharepoint | Skype
     }
 '@

@@ -44,7 +44,7 @@ function Connect-O365
     )
 
     dynamicparam {
-        if ($PSBoundParameters.Services -contains 'Sharepoint' -or $PSBoundParameters.ContainsKey('AllServices'))
+        if ($PSBoundParameters.Services -contains 'Sharepoint')
         {
             $ParamAttr = New-Object -TypeName System.Management.Automation.ParameterAttribute
             $ParamOptions = New-Object -TypeName System.Management.Automation.ValidatePatternAttribute ('^https://[a-zA-Z0-9\-]+\.sharepoint\.com')
@@ -63,6 +63,7 @@ function Connect-O365
         function Connect-O365Skype
         {
             param($Credential)
+            Import-Module -Name LyncOnlineConnector -DisableNameChecking -Force
             $Option = New-PSSessionOption -IdleTimeout -1
             $SkypeSession = New-CsOnlineSession -Credential $Credential -SessionOption $Option
             $ModuleName = 'SkypeForBusiness'
@@ -79,6 +80,8 @@ function Connect-O365
                 Credential = $Credential
                 WarningAction = 'SilentlyContinue'
             }
+            
+            Import-Module -Name Microsoft.Online.Sharepoint.Powershell -DisableNameChecking -Force
             Connect-SPOService @Params
         }
 
@@ -106,7 +109,10 @@ function Connect-O365
         switch ($Services)
         {
             { $_.HasFlag([O365Services]::AzureActiveDirectory) -or $_.HasFlag([O365Services]::Exchange) }
-            {Connect-MsolService -Credential $Credential}
+            {
+                Import-Module -Name MSOnline -DisableNameChecking -Force
+                Connect-MsolService -Credential $Credential
+            }
 
             { $_.HasFlag([O365Services]::Exchange) }
             { Connect-O365Exchange -Credential $Credential }
@@ -434,9 +440,6 @@ function Test-O365ExchSessionState
 
 Set-Alias -Name O365 -Value Connect-O365
 #requires -version 3.0
-#requires -module MSOnline
-#requires -module LyncOnlineConnector
-#requires -module Microsoft.Online.SharePoint.Powershell
 #endregion
 
 Export-ModuleMember -Function `
