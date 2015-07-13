@@ -47,11 +47,13 @@ function Connect-O365
         if ($PSBoundParameters.Services -contains 'Sharepoint')
         {
             $ParamAttr = New-Object -TypeName System.Management.Automation.ParameterAttribute
-            $ParamOptions = New-Object -TypeName System.Management.Automation.ValidatePatternAttribute ('^https://[a-zA-Z0-9\-]+\.sharepoint\.com')
+            $ParamOptions = New-Object -TypeName System.Management.Automation.ValidatePatternAttribute `
+                                       ('^https://[a-zA-Z0-9\-]+\.sharepoint\.com')
             $AttributeCollection = New-Object -TypeName 'Collections.ObjectModel.Collection[System.Attribute]'
             $AttributeCollection.Add($ParamAttr)
             $AttributeCollection.Add($ParamOptions)
-            $Parameter = New-Object -TypeName System.Management.Automation.RuntimeDefinedParameter -ArgumentList @('SharepointUrl', [string], $AttributeCollection)
+            $Parameter = New-Object -TypeName System.Management.Automation.RuntimeDefinedParameter `
+                                    -ArgumentList @('SharepointUrl', [string], $AttributeCollection)
             $Dictionary = New-Object -TypeName System.Management.Automation.RuntimeDefinedParameterDictionary
             $Dictionary.Add('SharepointUrl', $Parameter)
             $Dictionary
