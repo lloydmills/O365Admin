@@ -405,7 +405,7 @@ function Test-O365ExchSessionState
 {
     <#
         .DESCRIPTION
-        Checks for a current Exchange ONline session. If session does
+        Checks for a current Exchange Online session. If session does
         not exist or is broken, an error is returned.
     #>
     param
