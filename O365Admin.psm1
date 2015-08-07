@@ -202,7 +202,7 @@ function Get-O365PrincipalGroupMembership
     
     Reconnect-O365Exchange
 
-    $Recipient = Get-Recipient -Identity $Identity
+    $Recipient = Get-Recipient -Identity $UserPrincipalName
 
     $Groups = Get-Group -ResultSize Unlimited -RecipientTypeDetails 'MailUniversalDistributionGroup','MailUniversalSecurityGroup'
 
@@ -271,11 +271,11 @@ function Set-O365PrincipalGroupMembership
 
     If ($Replace -or $Clear)
     {
-        Get-O365PrincipalGroupMembership  -Identity $Identity |
+        Get-O365PrincipalGroupMembership  -UserPrincipalName $UserPrincipalName |
         ForEach-Object  -Process {
             $Params = @{
                 Identity = $_
-                Member = $Identity
+                Member = $UserPrincipalName
                 Confirm = $false
                 BypassSecurityGroupManagerCheck = $true
             }
@@ -289,7 +289,7 @@ function Set-O365PrincipalGroupMembership
     ForEach-Object  -Process {
         $Params = @{
                 Identity = $_
-                Member = $Identity
+                Member = $UserPrincipalName
                 Confirm = $false
                 BypassSecurityGroupManagerCheck = $true
             }
