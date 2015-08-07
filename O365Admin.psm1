@@ -167,38 +167,39 @@ function Disconnect-O365
 function Get-O365PrincipalGroupMembership
 {
     <#
-        .DESCRIPTION
-        Lists distribution group membership for an Exchange Online recipient
+            .DESCRIPTION
+            Lists distribution group membership for an Exchange Online recipient
 
-        .PARAMETER Identity
-        Specifies an Exchange Online recipient. Valid attributes are:
+            .PARAMETER Identity
+            Specifies an Exchange Online recipient. Valid attributes are:
 
-        Displayname
-        Example: 'Matthew McNabb'
+            Displayname
+            Example: 'Matthew McNabb'
 
-        UserPrincipalName
-        Example: matt@domain.com
+            UserPrincipalName
+            Example: matt@domain.com
 
-        DistinguishedName
-        Example: 'CN=Matthew McNabb,OU=Domain.onmicrosoft.com,OU=Microsoft Exchange Hosted Organizations,DC=NAMPR07B091,DC=prod,DC=outlook,DC=com'
+            DistinguishedName
+            Example: 'CN=Matthew McNabb,OU=Domain.onmicrosoft.com,OU=Microsoft Exchange Hosted Organizations,DC=NAMPR07B091,DC=prod,DC=outlook,DC=com'
 
-        Alias
-        Example: matt
+            Alias
+            Example: matt
 
-        .EXAMPLE
-        Get-O365PrincipalGroupMembership -Identity matt
+            .EXAMPLE
+            Get-O365PrincipalGroupMembership -Identity matt
 
-        This command retrieves the group membership for the recipient with alias 'matt'
+            This command retrieves the group membership for the recipient with alias 'matt'
     #>
     
     [CmdletBinding()]
     param
     (
-        [Parameter(Mandatory=$true)]
+        [Parameter(Mandatory=$true, ValueFromPipelineByPropertyName=$true)]
+        [Alias('Identity')]
         [string]
-        $Identity
+        $UserPrincipalName
     )
-
+    
     Reconnect-O365Exchange
 
     $Recipient = Get-Recipient -Identity $Identity
@@ -214,34 +215,34 @@ function Get-O365PrincipalGroupMembership
 function Set-O365PrincipalGroupMembership
 {
     <#
-        .DESCRIPTION
-        Configures group membership for an Exchange Online recipient.
+            .DESCRIPTION
+            Configures group membership for an Exchange Online recipient.
 
-        .PARAMETER Identity
-        Specifies an Exchange Online recipient whose group membership you will modify.
+            .PARAMETER Identity
+            Specifies an Exchange Online recipient whose group membership you will modify.
 
-        .PARAMETER MemberOf
-        Specifies the group(s) that the recipient will be a member of.
+            .PARAMETER MemberOf
+            Specifies the group(s) that the recipient will be a member of.
 
-        .PARAMETER Replace
-        If -Replace is included with -MemberOf then any previous group membership will be removed.
+            .PARAMETER Replace
+            If -Replace is included with -MemberOf then any previous group membership will be removed.
 
-        .PARAMETER Clear
-        The -Clear switch parameter will remove all group membership for the recipient.
+            .PARAMETER Clear
+            The -Clear switch parameter will remove all group membership for the recipient.
 
-        .EXAMPLE
-        Set-O365PrincipalGroupMembership -identity matt -memberof 'sales','IT'
+            .EXAMPLE
+            Set-O365PrincipalGroupMembership -Identity matt -Memberof 'sales','IT'
 
-        Adds the sales and IT groups to Matt's current group membership
-        .EXAMPLE
-        Set-O365PrincipalGroupMembership -identity matt -memberof 'sales','IT' -replace
+            Adds the sales and IT groups to Matt's current group membership
+            .EXAMPLE
+            Set-O365PrincipalGroupMembership -Identity matt -Memberof 'sales','IT' -Replace
 
-        Replaces and current group membership for Matt with the Sales and IT groups
+            Replaces and current group membership for Matt with the Sales and IT groups
 
-         .EXAMPLE
-        Set-O365PrincipalGroupMembership -identity matt -clear
+            .EXAMPLE
+            Set-O365PrincipalGroupMembership -Identity matt -Clear
 
-        Removes all group membership for Matt
+            Removes all group membership for Matt
     #>
     [CmdletBinding(DefaultParameterSetName = 'MemberOf')]
     Param
@@ -249,8 +250,9 @@ function Set-O365PrincipalGroupMembership
         # Office 365 user to modify
         [parameter(ParameterSetName='MemberOf')]
         [parameter(ParameterSetName='Clear')]
-        [parameter(Position=0,Mandatory=$true)]
-        $Identity,
+        [parameter(Position=0,Mandatory=$true,ValueFromPipelineByPropertyName=$true)]
+        [Alias('Identity')]
+        $UserPrincipalName,
 
         # An array of groups to add the user to. Separate group names with a comma.
         [parameter(ParameterSetName='MemberOf')]
@@ -298,25 +300,26 @@ function Set-O365PrincipalGroupMembership
 function Start-O365DirSync
 {
     <#
-        .SYNOPSIS
-        Initiates a directory import using Office 365 Azure Active Directory Sync.
-        .DESCRIPTION
-        Initiates a directory import using Office 365 Azure Active Directory Sync on the local or remote computer.
-        Can run an incremental sync or a full import sync.
-        .PARAMETER ComputerName
-        The computer on which Azure Active Directory Sync is running.
-        .PARAMETER Path
-        The path to the directory sync console file. You can ignore this parameter if you installed Azure Active 
-        Directory Sync to the default installation folder.
-        .PARAMETER Credential
-        You can provide an alternate credential for the remote computer.
-        .PARAMETER FullImport
-        Lets Azure Active Directory Sync know to run a full import sync instead of an incremental sync.
-        .EXAMPLE
-        Start-O365DirSync -ComputerName DirSyncServer -Credential 'whitehouse\alincoln'
-        .NOTES
+            .SYNOPSIS
+            Initiates a directory import using Office 365 Azure Active Directory Sync.
+            .DESCRIPTION
+            Initiates a directory import using Office 365 Azure Active Directory Sync on the local or remote computer.
+            Can run an incremental sync or a full import sync. If run against a remote computer, requires that PSRemoting
+            is enabled.
+            .PARAMETER ComputerName
+            The computer on which Azure Active Directory Sync is running.
+            .PARAMETER Path
+            The path to the directory sync console file. You can ignore this parameter if you installed Azure Active 
+            Directory Sync to the default installation folder.
+            .PARAMETER Credential
+            You can provide an alternate credential for the remote computer.
+            .PARAMETER FullImport
+            Lets Azure Active Directory Sync know to run a full import sync instead of an incremental sync.
+            .EXAMPLE
+            Start-O365DirSync -ComputerName DirSyncServer -Credential 'whitehouse\alincoln'
+            .NOTES
 
-        .LINK
+            .LINK
 
     #>
     [CmdletBinding()]
@@ -389,9 +392,9 @@ function Update-O365AccountSku
 function Reconnect-O365Exchange
 {
     <#
-        .DESCRIPTION
-        Checks for available connections to Exchange Online and 
-        reconects if session is in a disconnected or broken state.    
+            .DESCRIPTION
+            Checks for available connections to Exchange Online and 
+            reconects if session is in a disconnected or broken state.    
     #>
 
     try {Get-PSSession | Test-O365ExchSessionState}
@@ -406,9 +409,9 @@ function Reconnect-O365Exchange
 function Test-O365ExchSessionState
 {
     <#
-        .DESCRIPTION
-        Checks for a current Exchange Online session. If session does
-        not exist or is broken, an error is returned.
+            .DESCRIPTION
+            Checks for a current Exchange Online session. If session does
+            not exist or is broken, an error is returned.
     #>
     param
     (
@@ -441,6 +444,8 @@ function Test-O365ExchSessionState
 }
 
 Set-Alias -Name O365 -Value Connect-O365
+Set-Alias -Name gogm -Value Get-O365PrincipalGroupMembership
+Set-Alias -Name sogm -Value Set-O365PrincipalGroupMembership
 #requires -version 3.0
 #endregion
 
